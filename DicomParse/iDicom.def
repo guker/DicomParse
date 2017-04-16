@@ -1,0 +1,11 @@
+;LIBRARY  "DICOMParse"
+EXPORTS
+   IdicomInit  @1
+   IdicomUninit @2
+   IdicomCreateInst @3
+   IdicomDestroyInst @4
+   IdicomReset @5
+   IdicomLoadFile @6
+   IdicomLoadBuf @7
+   IdicomGetData @8
+   IdicomParse @9
