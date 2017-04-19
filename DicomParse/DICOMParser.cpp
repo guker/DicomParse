@@ -81,6 +81,7 @@ DICOMParser::DICOMParser() : ParserOutputFile()
 
     photometric = "";
     rgbconf     = 0;
+    is_reference = false;
 }
 
 DICOMParser::~DICOMParser()
@@ -155,6 +156,7 @@ void DICOMParser::Reset()
 
     photometric = "";
     rgbconf     = 0;
+    is_reference = false;
 } 
 
 
@@ -312,6 +314,11 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
         {
             level++;
         }
+
+        if(group == 0x0008 && element == 0x1140)
+        {
+            is_reference = true;
+        }
     }
     else if((group == 0xfffe && element == 0xe00d && length == 0xffffffff) || (group == 0xfffe && element == 0xe0dd && length == 0xffffffff))
     {
@@ -333,6 +340,7 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
         {
             buf_->Read(tag_data_.data(),length);
         }
+
         if(group == 0x0002 && element == 0x0010)
         {
             if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.1"))
@@ -523,6 +531,11 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
         {
             level++;
         }
+
+        if(group == 0x0008 && element == 0x1140)
+        {
+            is_reference = true;
+        }
     }
     else if((group == 0xfffe && element == 0xe00d && length == 0xffffffff) || (group == 0xfffe && element == 0xe0dd && length == 0xffffffff))
     {
@@ -609,14 +622,19 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         strcpy(info.StudyDate,study_date);
         delete[] study_date;
     }
-
-    if( 0x0008 == group && 0x1155 == element)
+    /// 存在多个(0x0008,0x1155)
+    if(is_reference)
     {
-        char* refrence_sop = new char[len];
-        memcpy(refrence_sop,temdata,len-1);
-        refrence_sop[len-1] = '\0';
-        strcpy(info.RefSopId,refrence_sop);
-        delete[] refrence_sop;
+        if( 0x0008 == group && 0x1155 == element)
+        {
+            char* refrence_sop = new char[len];
+            memcpy(refrence_sop,temdata,len-1);
+            refrence_sop[len-1] = '\0';
+            strcpy(info.RefSopId,refrence_sop);
+            delete[] refrence_sop;
+            // 重置
+            is_reference = false;
+        }
     }
 
     if(0x0010 == group && 0x0010 == element)
