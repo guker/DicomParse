@@ -303,7 +303,7 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
     }
     else if( (!strcmp(VR,"SQ") && length == 0xffffffff) || ( group == 0xfffe && element == 0xe000) && length == 0xffffffff )
     {
-        /// 遇到文件夹开始标签
+        /// 遇到文件夹开始标签，因为长度为0，直接跳过，文件夹里面的Tag继续正常解析
         if( enDir == false)
         {
             enDir = true;
@@ -315,6 +315,7 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
     }
     else if((group == 0xfffe && element == 0xe00d && length == 0xffffffff) || (group == 0xfffe && element == 0xe0dd && length == 0xffffffff))
     {
+        /// 遇到文件夹结束标签，直接跳过
         if(enDir == true)
         {
             enDir = false;
@@ -513,7 +514,7 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
     }
     else if( (!strcmp(VR,"SQ") && length == 0xffffffff) || ( group == 0xfffe && element == 0xe000) && length == 0xffffffff )
     { 
-        /// 遇到文件夹开始标签
+        /// 遇到文件夹开始标签，因为长度为0，直接跳过，文件夹里面的Tag继续正常解析
         if( enDir == false)
         {
             enDir = true;
@@ -525,6 +526,7 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
     }
     else if((group == 0xfffe && element == 0xe00d && length == 0xffffffff) || (group == 0xfffe && element == 0xe0dd && length == 0xffffffff))
     {
+        /// 遇到文件夹结束标签，直接跳过
         if(enDir == true)
         {
             enDir = false;
@@ -589,6 +591,15 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         delete[] imageType;
     }
 
+    if( 0x0008 == group && 0x0018 == element)
+    {
+        char* Sopid = new char[len];
+        memcpy(Sopid,temdata,len-1);
+        Sopid[len-1] = '\0';
+        strcpy(info.SopId,Sopid);
+        delete[] Sopid;
+    }
+
     if( 0x0008 == group && 0x0020 == element)
     {
         char* study_date = new char[len];
@@ -597,6 +608,15 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         //info.StudyDate = study_date;
         strcpy(info.StudyDate,study_date);
         delete[] study_date;
+    }
+
+    if( 0x0008 == group && 0x1155 == element)
+    {
+        char* refrence_sop = new char[len];
+        memcpy(refrence_sop,temdata,len-1);
+        refrence_sop[len-1] = '\0';
+        strcpy(info.RefSopId,refrence_sop);
+        delete[] refrence_sop;
     }
 
     if(0x0010 == group && 0x0010 == element)

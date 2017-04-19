@@ -28,6 +28,8 @@ typedef struct
     char StudyDate[20];
     char StudyId[20];
     char ImageType[50];
+    char RefSopId[128];
+    char SopId[128];
 
     int         WinCenter;
     int         WinWidth;
