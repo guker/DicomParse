@@ -289,7 +289,7 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
     }
     else if(isExplicitVR == false)
     {
-        ///  隐式VR根据tag一个一个
+        ///  隐式VR，即不存在VR,数据长度为4个字节
        // VR = "*";  
         length = buf_->ReadQuadByte();
     }
@@ -340,7 +340,6 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
         {
             buf_->Read(tag_data_.data(),length);
         }
-
         if(group == 0x0002 && element == 0x0010)
         {
             if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.1"))
@@ -471,12 +470,15 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
 
     if( group == 0x0002)
     {
+        /* group为0x0002，不受传输语法影响，总是以显示VR方式表示，因为它定义了传输语法 */
         doublebyte vr = DataFile->ReadDoubleByteAsLittleEndian();
         memcpy(VR,&vr,2*sizeof(char));
         VR[2] = '\0';
         if( !strcmp(VR,"OB") ||  !strcmp(VR,"OW")  ||  !strcmp(VR,"SQ")  |  !strcmp(VR,"OF") ||  !strcmp(VR,"UT") |  !strcmp(VR,"UN"))
         {
+            // 此处跳过预留的2个字节
             DataFile->Skip(2);
+            // 显式VR值为OB,OW,SQ,OF,UT,UN时，长度为4个字节，否则为2个字节
             length = DataFile->ReadQuadByte();
         }
         else
@@ -497,6 +499,7 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
         if( !strcmp(VR,"OB") ||  !strcmp(VR,"OW")  ||  !strcmp(VR,"SQ")  |  !strcmp(VR,"OF") ||  !strcmp(VR,"UT") |  !strcmp(VR,"UN"))
         {
             DataFile->Skip(2);
+            // 显式VR值为OB,OW,SQ,OF,UT,UN时，长度为4个字节，否则为2个字节
             length = DataFile->ReadQuadByte();
         }
         else
@@ -506,7 +509,7 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
     }
     else if(isExplicitVR == false)
     {
-        ///  隐式VR根据tag一个一个
+        ///  隐式VR，即不存在VR,数据长度为4个字节
        // VR = "*";  
         length = DataFile->ReadQuadByte();
     }
@@ -557,6 +560,7 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
         {
             DataFile->Read(tag_data_.data(),length);
         }
+        /// 定义传输语法
         if(group == 0x0002 && element == 0x0010)
         {
             if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.1"))
@@ -622,6 +626,7 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         strcpy(info.StudyDate,study_date);
         delete[] study_date;
     }
+
     /// 存在多个(0x0008,0x1155)
     if(is_reference)
     {

@@ -235,6 +235,7 @@ private:
     std::string         photometric;
     /// RGB排列方式
     int                 rgbconf;
+
     /// 关联,存在多个相同的tag，只取(0x0008,0x1140)下的（0x0008,0x1155）
     bool                is_reference;
 private:
