@@ -236,11 +236,11 @@ private:
     /// RGB排列方式
     int                 rgbconf;
 
-    /// 关联,存在多个相同的tag，只取(0x0008,0x1140)下的（0x0008,0x1155）
+    /// 关联X光片,存在多个相同的tag(0008,1155)，只取(0x0008,0x1140)下的（0x0008,0x1155）
     bool                is_reference;
 private:
-    DICOMParser(const DICOMParser&);  
-    void operator=(const DICOMParser&); 
+    DICOMParser(const DICOMParser&);
+    void operator=(const DICOMParser&);
 };
 
 #ifdef _MSC_VER
