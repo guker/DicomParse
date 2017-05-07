@@ -19,6 +19,7 @@
 #include "DICOMFile.h"
 #include "DICOMTypes.h"
 #include "DICOMBuffer.h"
+#include "jpg_0XC3.h"
 
 
 typedef struct
@@ -46,6 +47,8 @@ typedef struct
 
     int         Width;
     int         Height;
+
+    float      ImageOrientation[6];
 
 }DicomParserInfo;
 
@@ -132,6 +135,21 @@ public:
                 *data = res.data();
             }
             return;
+        }
+
+        if(is_jpeg70)
+        {
+            int height_new = 0;
+            int width_new  = 0;
+            int bitss      = 0;
+            int frame      = 0;
+            unsigned char* res = decode_JPEG_SOF_0XC3(img_data_.data(),img_data_.size(),0,&width_new,&height_new,&bitss,&frame);
+            int dim = 2*(*width)*(*heigth);
+            jpeg_data_.resize(dim);
+            memcpy(&jpeg_data_[0],res,dim*sizeof(char));
+            *data = jpeg_data_.data();
+            delete res;
+            return ;
         }
         /// MONOCHROME2情况
         short* im_data = (short*)(img_data_.data());
@@ -235,12 +253,15 @@ private:
     std::string         photometric;
     /// RGB排列方式
     int                 rgbconf;
-
-    /// 关联X光片,存在多个相同的tag(0008,1155)，只取(0x0008,0x1140)下的（0x0008,0x1155）
+    /// 关联,存在多个相同的tag，只取(0x0008,0x1140)下的（0x0008,0x1155）
     bool                is_reference;
+
+    bool                is_jpeg70;
+    /* 保存jpeg解压数据 */
+    std::vector<char>   jpeg_data_;
 private:
-    DICOMParser(const DICOMParser&);
-    void operator=(const DICOMParser&);
+    DICOMParser(const DICOMParser&);  
+    void operator=(const DICOMParser&); 
 };
 
 #ifdef _MSC_VER

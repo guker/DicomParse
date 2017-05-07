@@ -70,37 +70,39 @@ int IMRAPI IdicomParse(void* inst,DicomParserInfo* dicom_info)
 //int main(int argc,char* argv[])
 //{
 //    std::string filename = argv[1];
-//    //FILE* fp = fopen(filename.c_str(),"rb");
-//    //if(NULL == fp)
-//    //{
-//    //    std::cout<<"cannot open dicom file" << std::endl;
-//    //    return  -1;
-//    //}
-//    //fseek(fp,0,SEEK_END);
-//    //
-//    //int len = ftell(fp);
-//    //fseek(fp,0,SEEK_SET);
-//    //char* buffer = new char[len];
-//    //fread((void*)buffer,sizeof(char),len,fp);
-//
-//    //IdicomInit(NULL);
-//    //void* inst;
-//    //IdicomCreateInst(&inst);
-//    //IdicomLoadBuf(inst,buffer,len);
-//    //DicomParserInfo info;
-//    //IdicomParse(inst,&info);
+//    FILE* fp = fopen(filename.c_str(),"rb");
+//    if(NULL == fp)
+//    {
+//        std::cout<<"cannot open dicom file" << std::endl;
+//        return  -1;
+//    }
+//    fseek(fp,0,SEEK_END);
+//    
+//    int len = ftell(fp);
+//    fseek(fp,0,SEEK_SET);
+//    char* buffer = new char[len];
+//    fread((void*)buffer,sizeof(char),len,fp);
 //
 //    IdicomInit(NULL);
 //    void* inst;
 //    IdicomCreateInst(&inst);
-//    IdicomLoadFile(inst,filename.c_str());
-//
+//    IdicomLoadBuf(inst,buffer,len);
 //    DicomParserInfo info;
 //    IdicomParse(inst,&info);
+//
+//    //IdicomInit(NULL);
+//    //void* inst;
+//    //IdicomCreateInst(&inst);
+//    //IdicomLoadFile(inst,filename.c_str());
+//
+//    //DicomParserInfo info;
+//    //IdicomParse(inst,&info);
 //    char* data = NULL;
 //    int   width = 0;
 //    int   heigth = 0;
 //    IdicomGetData(inst,&data,&width,&heigth);
+//    short* p = (short*)data;
+//    IdicomDestroyInst(inst);
 //
 //    return 0;
 //}

@@ -40,7 +40,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -119,12 +119,14 @@
     <ClInclude Include="DICOMParser.h" />
     <ClInclude Include="DICOMTypes.h" />
     <ClInclude Include="iDicom.h" />
+    <ClInclude Include="jpg_0XC3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DICOMFile.cpp" />
     <ClCompile Include="DICOMParser.cpp" />
     <ClCompile Include="DicomTest.cpp" />
     <ClCompile Include="iDicom.cpp" />
+    <ClCompile Include="jpg_0XC3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="iDicom.def" />

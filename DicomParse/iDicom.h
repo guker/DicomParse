@@ -5,31 +5,11 @@
 /**
 * DICOM API type
 */
-#if defined (_MSC_VER)                  /* Microsoft Visual C++ */
-#if !defined(IMRAPI)
+#if defined(_MSC_VER)
+#pragma pack(push,8)
+#endif
+
 #define IMRAPI __stdcall
-#endif
-#pragma pack(push, 8)
-
-#elif defined (__BORLANDC__)          /* Borland C++ */
-#if !defined(IMRAPI)
-#define IMRAPI __stdcall
-#endif
-#pragma option -a8
-
-#elif defined(__WATCOMC__)           /* Watcom C++ */
-#if !defined(IMRAPI)
-#define IMRAPI __stdcall
-#endif
-#pragma pack(push, 8)
-
-#else                               /* Linux and Unix*/
-#if !defined(IMRAPI)
-#define IMRAPI
-#endif
-#endif
-
-#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,27 +33,18 @@ extern "C" {
     int IMRAPI IdicomLoadFile(void* inst,const char* path);
     typedef int (IMRAPI *Proc_IdicomLoadFile)(void* inst,const char* path);
     
-    int IMRAPI IdicomLoadBuf(void* inst, char* data,int size);
+    int IMRAPI IdciomLoadBuf(void* inst, char* data,int size);
     typedef int (IMRAPI *Proc_IdicomLoadBuf)(void* inst,char* data,int size);
 
     int IMRAPI IdicomGetData(void* inst,char** data,int* width,int* heigth);
     typedef int (IMRAPI *Proc_IdicomGetData)(void* inst, char** data,int* width,int* heigth);
 
     int IMRAPI IdicomParse(void* inst,DicomParserInfo* dicom_info);
-    typedef int (IMRAPI *Proc_IdicomParse)(void* inst,DicomParserInfo* dicom_info);
+    typedef int (IMRAPI *Proc_IdiomParse)(void* inst,DicomParserInfo* dicom_info);
 
 
 #ifdef __cplusplus
 };
-#endif
-
-/* reset the structure packing alignments for different compiler */
-#if defined(_MSC_VER)                    /* Microsoft Visual C++ */
-#pragma pack(pop);                       
-#elif defined(__BORLANDC__)               /* Borland C++ */
-#pragma option -a.
-#elif defined(__WATCOMC__)               /* Watcom C++ */
-#pragma pack(pop)
 #endif
 
 #endif

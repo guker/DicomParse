@@ -27,10 +27,13 @@
     <ClInclude Include="DICOMBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="iDicom.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="DICOMParser.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="iDicom.h">
+    <ClInclude Include="jpg_0XC3.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,10 +44,13 @@
     <ClCompile Include="DicomTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="iDicom.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="DICOMParser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="iDicom.cpp">
+    <ClCompile Include="jpg_0XC3.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

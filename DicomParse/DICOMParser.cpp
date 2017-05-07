@@ -82,6 +82,7 @@ DICOMParser::DICOMParser() : ParserOutputFile()
     photometric = "";
     rgbconf     = 0;
     is_reference = false;
+    is_jpeg70    = false;
 }
 
 DICOMParser::~DICOMParser()
@@ -157,6 +158,7 @@ void DICOMParser::Reset()
     photometric = "";
     rgbconf     = 0;
     is_reference = false;
+    is_jpeg70    = false;
 } 
 
 
@@ -289,18 +291,29 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
     }
     else if(isExplicitVR == false)
     {
-        ///  隐式VR，即不存在VR,数据长度为4个字节
+        ///  隐式VR根据tag一个一个
        // VR = "*";  
         length = buf_->ReadQuadByte();
     }
     
     if(group == 0x7fe0 && element == 0x0010)
     {
-        img_data_.resize(length+1);
-        img_data_[length] = 0;
-        if (length > 0) 
+        //img_data_.resize(length+1);
+        //img_data_[length] = 0;
+        //if (length > 0) 
+        //{
+        //    buf_->Read(img_data_.data(),length);
+        //}
+
+        if(length>=0)
         {
+            img_data_.resize(length + 1);
+            img_data_[length] = 0;
             buf_->Read(img_data_.data(),length);
+        }
+        else
+        {
+            // 解析出长度为0xffffffff
         }
     }
     else if( (!strcmp(VR,"SQ") && length == 0xffffffff) || ( group == 0xfffe && element == 0xe000) && length == 0xffffffff )
@@ -332,6 +345,16 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
             level--;
         }
     }
+    else if(group == 0xfffe && element == 0xe000 && length == 0)
+    {
+        // nothing 
+    }
+    else if( group == 0xfffe && element == 0xe000 && length > 0)
+    {
+            img_data_.resize(length);
+            buf_->Read(img_data_.data(),length);
+            is_jpeg70 = true;
+    }
     else
     {
         tag_data_.resize(length+1);
@@ -340,6 +363,7 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
         {
             buf_->Read(tag_data_.data(),length);
         }
+
         if(group == 0x0002 && element == 0x0010)
         {
             if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.1"))
@@ -357,6 +381,11 @@ void DICOMParser::ReadNextRecord_ex(doublebyte& group, doublebyte& element,DICOM
             {
                  isLitteEndian = true;
                  isExplicitVR = false;
+            }
+            if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.4.70"))
+            {
+                 isLitteEndian = true;
+                 isExplicitVR = true;
             }
         }
         DumgTag(group,element,(unsigned char*)tag_data_.data(),length);
@@ -470,15 +499,12 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
 
     if( group == 0x0002)
     {
-        /* group为0x0002，不受传输语法影响，总是以显示VR方式表示，因为它定义了传输语法 */
         doublebyte vr = DataFile->ReadDoubleByteAsLittleEndian();
         memcpy(VR,&vr,2*sizeof(char));
         VR[2] = '\0';
         if( !strcmp(VR,"OB") ||  !strcmp(VR,"OW")  ||  !strcmp(VR,"SQ")  |  !strcmp(VR,"OF") ||  !strcmp(VR,"UT") |  !strcmp(VR,"UN"))
         {
-            // 此处跳过预留的2个字节
             DataFile->Skip(2);
-            // 显式VR值为OB,OW,SQ,OF,UT,UN时，长度为4个字节，否则为2个字节
             length = DataFile->ReadQuadByte();
         }
         else
@@ -499,7 +525,6 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
         if( !strcmp(VR,"OB") ||  !strcmp(VR,"OW")  ||  !strcmp(VR,"SQ")  |  !strcmp(VR,"OF") ||  !strcmp(VR,"UT") |  !strcmp(VR,"UN"))
         {
             DataFile->Skip(2);
-            // 显式VR值为OB,OW,SQ,OF,UT,UN时，长度为4个字节，否则为2个字节
             length = DataFile->ReadQuadByte();
         }
         else
@@ -509,18 +534,22 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
     }
     else if(isExplicitVR == false)
     {
-        ///  隐式VR，即不存在VR,数据长度为4个字节
+        ///  隐式VR根据tag一个一个
        // VR = "*";  
         length = DataFile->ReadQuadByte();
     }
     
     if(group == 0x7fe0 && element == 0x0010)
     {
-        img_data_.resize(length+1);
-        img_data_[length] = 0;
-        if (length > 0) 
+        if(length > 0)
         {
+            img_data_.resize(length+1);
+            img_data_[length] = 0;
             DataFile->Read(img_data_.data(),length);
+        }
+        else
+        {
+            /// nothing
         }
     }
     else if( (!strcmp(VR,"SQ") && length == 0xffffffff) || ( group == 0xfffe && element == 0xe000) && length == 0xffffffff )
@@ -552,6 +581,16 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
             level--;
         }
     }
+    else if(group == 0xfffe && element == 0xe000 && length == 0)
+    {
+        // nothing 
+    }
+    else if( group == 0xfffe && element == 0xe000 && length > 0)
+    {
+            img_data_.resize(length);
+            DataFile->Read(img_data_.data(),length);
+            is_jpeg70 = true;
+    }
     else
     {
         tag_data_.resize(length+1);
@@ -560,7 +599,6 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
         {
             DataFile->Read(tag_data_.data(),length);
         }
-        /// 定义传输语法
         if(group == 0x0002 && element == 0x0010)
         {
             if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.1"))
@@ -578,6 +616,11 @@ void DICOMParser::ReadNextRecord(doublebyte& group, doublebyte& element, DICOMPa
             {
                  isLitteEndian = true;
                  isExplicitVR = false;
+            }
+            if(!strcmp(tag_data_.data(),"1.2.840.10008.1.2.4.70"))
+            {
+                 isLitteEndian = true;
+                 isExplicitVR = true;
             }
         }
         DumgTag(group,element,(unsigned char*)tag_data_.data(),length);
@@ -626,7 +669,6 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         strcpy(info.StudyDate,study_date);
         delete[] study_date;
     }
-
     /// 存在多个(0x0008,0x1155)
     if(is_reference)
     {
@@ -697,6 +739,19 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         delete[] imagePosition;
     }
 
+    if( 0x0020 == group && 0x0037 == element)
+    {
+        char* orientation = new char[len];
+        memcpy(orientation,temdata,len-1);
+        orientation[len-1] = '\0';
+        std::string ori = orientation;
+        std::vector<std::string> res = splitEx(ori,"\\");
+        for(int i = 0; i < res.size();i++)
+        {
+            info.ImageOrientation[i] = atof(res[i].c_str());
+        }
+        delete[] orientation;
+    }
     if(0x0020 == group && 0x1041 == element)
     {
         char* sliceLocation = new char[len];
@@ -760,7 +815,9 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         char* wincenter = new char[len];
         memcpy(wincenter,temdata,len-1);
         wincenter[len-1] = '\0';
-        info.WinCenter = atoi(wincenter);
+        std::string winc = wincenter;
+        std::vector<std::string> res = splitEx(winc,"\\");
+        info.WinCenter = atoi(res[0].c_str());
         delete[] wincenter;
     }
 
@@ -769,7 +826,9 @@ void DICOMParser::DumgTag(doublebyte group, doublebyte element,unsigned char* te
         char* winwidth = new char[len];
         memcpy(winwidth,temdata,len-1);
         winwidth[len-1] = '\0';
-        info.WinWidth = atoi(winwidth);
+        std::string winw = winwidth;
+        std::vector<std::string> res = splitEx(winw,"\\");
+        info.WinWidth = atoi(res[0].c_str());
         delete winwidth;
     }
 
